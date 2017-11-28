@@ -14,8 +14,9 @@ def index():
     '''首页导航'''
     res={
         '/report/index': '自动化测试总览',
-        '/report/detail?kw=奶糖API': '奶糖API测试明细',
-        'http://ntqa02v.qa.corp.qihoo.net:8080/': 'GIT'
+        'http://ntqa02v.qa.corp.qihoo.net:8080/': 'GIT',
+        'http://ntqa02v.qa.corp.qihoo.net:8000/': 'Jenkins',
+        '/static/T%E9%A1%B9%E7%9B%AE%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%96%87%E6%A1%A3.zip': 'T项目服务端测试文档'
     }
     return GetLink(res)
 
@@ -24,6 +25,7 @@ def report_index():
     '''报告首页，展示各服务最新批次结果'''
     res=ReportDao().GetReportIndex()
     return render_template('report/index.html',res=res)
+
 
 @app.route('/report/detail')
 def report_detail():
@@ -42,8 +44,8 @@ def report_ajax():
     res=ReportDao().GetReportAjax(kw,batchno)
     return dumps(res,ensure_ascii=False)
 
-manager=Manager(app)
+#manager=Manager(app)
 
 if __name__=="__main__":
-    manager.run()
-    #app.run(debug=True)
+    #manager.run()
+    app.run(debug=True)

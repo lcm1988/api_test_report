@@ -26,6 +26,7 @@ class BaseDao():
         lmt='limit %s'%str(limit) if limit else ''
 
         sql="select %s from %s %s %s %s"%(dt,self.tbname,whr,order,lmt)
+
         data=self.excute(sql)
         return data
 
@@ -36,7 +37,8 @@ class BaseDao():
             host=self.conf['host'],
             user=self.conf['user'],
             password=self.conf['pwd'],
-            database=self.conf['db'])
+            database=self.conf['db'],
+            charset='utf8')
         cursor = db.cursor(cursor=pymysql.cursors.DictCursor)
         #print(sql)
         cursor.execute(sql)

@@ -1,31 +1,38 @@
 //datatable初始参数
-var initAjaxsource= "/report/ajax?kw=奶糖API"+"&batchno="+Math.max.apply(null,res.no);//默认调用最新批次执行结果
-var initParams={
-        "sAjaxSource": initAjaxsource,
-        //该配置确保datatable是可以刷新的，不能少
-        retrieve: true,
-        "columns": [
-            { "data": "datebuffer" },
-            { "data": "interfacename" },
-            { "data": "testcasename" },
-            { "data": "plateform" },
-            { "data": "testresult" },
-            { "data": "failreason" },
-            { "data": "response" }
-        ]
-    };
+
 var wageNowTable;
 var no= res.no;//批次时间戳
 var pass= res.pass;//成功率
 var service= res.service;
 var data=[];
 
-for (var i=0 ;i <= no.length; i++){
-    t= new Date(no[i]*1000);
+var initAjaxsource= "/report/ajax?kw="+service+"&batchno="+Math.max.apply(null,no);//默认调用最新批次执行结果
+var initParams={
+        "sAjaxSource": initAjaxsource,
+        //该配置确保datatable是可以刷新的，不能少
+        retrieve: true,
+        "columns": [
+            { "data": "no"},
+            { "data": "platform" },
+            { "data": "service" },
+            { "data": "uri" },
+            { "data": "casename" },
+            { "data": "casepath" },
+            { "data": "result" },
+            { "data": "cost" },
+            { "data": "consoleinfo", "visible": false },
+            { "data": "errinfo", "visible": false },
+            { "data": null , "defaultContent": "<button>查看</button>"}
+        ],
+        "order":[[6,"asc"]]
+    };
+
+for (var i=0 ;i < no.length; i++){
+    runtime= new Date(no[i]*1000);
     tmp={
-        name: t.toString(),
+        name: runtime.toString(),
         value:[
-            [t.getFullYear(), t.getMonth(), t.getDate()].join('/')+' '+[t.getHours(), t.getMinutes(), t.getSeconds()].join(':'),
+            [runtime.getFullYear(), runtime.getMonth()+1, runtime.getDate()].join('/')+' '+[runtime.getHours(), runtime.getMinutes()].join(':'),
             pass[i],
             no[i]
         ]
@@ -35,26 +42,24 @@ for (var i=0 ;i <= no.length; i++){
 //配置报表
 var myChart = echarts.init(document.getElementById('echarts_sheet'));
 var option = {
-    title: {
-        right: '0%',
-        bottom: '0%',
-        text: '各批次成功率',
-        subtext: '数据来源：QADEV'
-    },
     tooltip: {
         trigger: 'axis',
+        axisPointer: {
+            type: 'cross'
+        },
         formatter: function (params) {
-            params = params[0];
-            var date = new Date(params.name);
-            return '执行时刻：'+[date.getHours(), date.getMinutes()].join(':') +'\n成功率：'+params.value[1]+'\n批次：'+params.value[2];
+            param = params[0];
+            console.log(JSON.stringify(param));
+            return '执行时间：'+param.data.value[0]+'<br>成功率：'+param.data.value[1]+'<br>批次：'+param.data.value[2];
         }
     },
     toolbox: {
         show : true,
         feature : {
             magicType : {show: true, type: ['line', 'bar']},
-        saveAsImage : {show: true}
-        }
+            saveAsImage : {show: true}
+        },
+        right:'2%'
     },
     grid: {
         top: '10%',
@@ -63,13 +68,33 @@ var option = {
         bottom: '15%'
     },
     xAxis: [{
-        nameRotate: 30,
-        type: 'time'
+        name: '执行时间',
+        type: 'time',
+        minInterval: 0,
+        nameRotate: 0,
+        max: function(){
+            return Date.parse(new Date())+3600*1000
+        }
     }],
     yAxis: [{
         name: '成功率',
-        type: 'value'
+        type: 'value',
+        max:100
     }],
+    dataZoom: [
+        {
+        	id: 'dataZoomX1',
+        	type: 'inside',
+        	xAxisIndex: [0],
+        	filterMode: 'filter'
+        },
+        {
+        	id: 'dataZoomX2',
+        	type: 'slider',
+        	xAxisIndex: [0],
+        	filterMode: 'filter'
+        }
+    ],
     series: [{
         name: '模拟数据',
         type: 'line',
@@ -87,9 +112,14 @@ myChart.on('click', function (params) {
     //alert(url);
     initParams.sAjaxSource=url;
     wageNowTable = $('#datatable_sheet').dataTable(initParams);//刷新数据列表
+
 });
 
 //配置数据列表
 $(document).ready(function() {
-    $('#datatable_sheet').DataTable(initParams);
+    var table = $('#datatable_sheet').DataTable(initParams);
+    $('#datatable_sheet tbody').on( 'click', 'button', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        alert( data["consoleinfo"] +"\n\n"+ data["errinfo"] );
+    } );
 });

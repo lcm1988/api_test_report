@@ -7,7 +7,7 @@ var option = {
     title: {
         right: 10,
         bottom: 5,
-        text: '批次：'+res.service,
+        text: '各服务最新批次展示',
         subtext: '数据来源：NTQA'
     },
     //维度属性
